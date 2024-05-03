@@ -1,0 +1,9 @@
+# cpp
+cmake-build-*
+build
+
+# python
+__pycache__
+
+# IDE
+.idea
