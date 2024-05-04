@@ -1,11 +1,19 @@
-#include <path/Navigator.hpp>
+#pragma once
+
+#include <path/grid.hpp>
 
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
 #include <queue>
+#include <unordered_map>
 
 namespace path {
+class Navigator {
+    static std::vector<Point> navigate_astar(const Grid& grid, Point start, Point end);
+    static std::vector<Point> reconstruct_path(const std::unordered_map<Point, Point, Point::Hash>& parents, Point end);
+};
+
 std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Point start, const Point end) {
     using Node = std::tuple<int, int, Point>; // (f, g, p)
     const auto node_cmp = [](const Node& n1, const Node& n2) {
@@ -47,8 +55,8 @@ std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Point start
     return {};
 }
 
-std::vector<Point>
-Navigator::reconstruct_path(const std::unordered_map<Point, Point, Point::Hash>& parents, Point end) {
+std::vector<Point> Navigator::reconstruct_path(
+    const std::unordered_map<Point, Point, Point::Hash>& parents, Point end) {
     std::vector<Point> path {end};
     auto current = end;
     while (parents.contains(current)) {

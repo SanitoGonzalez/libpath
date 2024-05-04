@@ -31,7 +31,7 @@ struct Grid {
         if (p.c >= 1) neighbors.push_back({.r = p.r, .c = p.c - 1});
         if (p.r < rows - 1) neighbors.push_back({.r = p.r + 1, .c = p.c});
         if (p.r >= 1) neighbors.push_back({.r = p.r - 1, .c = p.c});
-        if (p.c < cols - 1 && p.r < rows - 1) neighbors.push_back({ .r = p.r + 1, .c = p.c + 1});
+        if (p.c < cols - 1 && p.r < rows - 1) neighbors.push_back({.r = p.r + 1, .c = p.c + 1});
         if (p.c < cols - 1 && p.r >= 1) neighbors.push_back({.r = p.r - 1, .c = p.c + 1});
         if (p.c >= 1 && p.r < rows - 1) neighbors.push_back({.r = p.r + 1, .c = p.c - 1});
         if (p.c >= 1 && p.r >= 1) neighbors.push_back({.r = p.r - 1, .c = p.c - 1});
