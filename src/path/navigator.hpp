@@ -14,10 +14,14 @@ class Navigator {
     static std::vector<Point> reconstruct_path(const std::unordered_map<Point, Point, Point::Hash>& parents, Point end);
 };
 
-std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Point start, const Point end) {
-    using Node = std::tuple<int, int, Point>; // (f, g, p)
+inline std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Point start, const Point end) {
+    struct Node {
+        int f;
+        int g;
+        Point p;
+    };
     const auto node_cmp = [](const Node& n1, const Node& n2) {
-        return get<0>(n1) > get<0>(n2);
+        return n1.f > n2.f;
     };
 
     const auto heuristic = [end](const Point p) {
@@ -37,29 +41,29 @@ std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Point start
         if (g_temp < g[current]) continue;
 
         for (const auto next : grid.get_neighbors(current)) {
-            if (closed.contains(next)) continue;
+            if (closed.count(next) == 0) continue;
             if (grid(next)) continue;
 
             const auto g_next = g[current] + 1;
-            if (g.contains(next) && g_next >= g[next]) continue;
+            if (g.count(next) > 0 && g_next >= g[next]) continue;
 
             parents[next] = current;
             if (next == end) return reconstruct_path(parents, next);
 
             g[next] = g_next;
             const auto f = g_next + heuristic(next);
-            open.emplace(f, g_next, next);
+            open.push({f, g_next, next});
         }
     }
 
     return {};
 }
 
-std::vector<Point> Navigator::reconstruct_path(
+inline std::vector<Point> Navigator::reconstruct_path(
     const std::unordered_map<Point, Point, Point::Hash>& parents, Point end) {
     std::vector<Point> path {end};
     auto current = end;
-    while (parents.contains(current)) {
+    while (parents.count(current) > 0) {
         current = parents.at(current);
         path.push_back(current);
     }

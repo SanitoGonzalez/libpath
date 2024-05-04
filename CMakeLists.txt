@@ -19,7 +19,7 @@ FetchContent_MakeAvailable(pybind11)
 
 find_package(Python REQUIRED COMPONENTS Development)
 
-target_compile_features(path PRIVATE cxx_std_20)
+target_compile_features(path PRIVATE cxx_std_11)
 target_include_directories(path PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/src
     ${Python_INCLUDE_DIRS}
