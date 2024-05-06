@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <format>
 #include <vector>
 
 namespace path {
@@ -16,6 +17,8 @@ struct Point {
     bool operator==(const Point& other) const {
         return r == other.r && c == other.c;
     }
+
+    [[nodiscard]] std::string to_string() const { return std::format("({}, {})", r, c); }
 };
 
 struct Grid {

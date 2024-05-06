@@ -10,6 +10,7 @@
 
 namespace path {
 class Navigator {
+public:
     static std::vector<Point> navigate_astar(const Grid& grid, Point start, Point end);
     static std::vector<Point> reconstruct_path(const std::unordered_map<Point, Point, Point::Hash>& parents, Point end);
 };
@@ -26,7 +27,7 @@ inline std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Poin
 
     const auto heuristic = [end](const Point p) {
         // Octile distance; Cost of cardinal move = 1, Cost of diagonal move = 1
-        return std::abs(int(p.c - end.c)) + std::abs(int(p.r - end.r));
+        return std::abs(static_cast<int>(p.c - end.c)) + std::abs(static_cast<int>(p.r - end.r));
     };
 
     std::priority_queue<Node, std::vector<Node>, decltype(node_cmp)> open {node_cmp};
@@ -34,6 +35,7 @@ inline std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Poin
     std::unordered_map<Point, Point, Point::Hash> parents {};
     std::unordered_map<Point, int, Point::Hash> g {{start, 0}};
 
+    open.push({0, 0, start});
     while (!open.empty()) {
         const auto [_, g_temp, current] = open.top();
         open.pop();
@@ -41,11 +43,11 @@ inline std::vector<Point> Navigator::navigate_astar(const Grid& grid, const Poin
         if (g_temp < g[current]) continue;
 
         for (const auto next : grid.get_neighbors(current)) {
-            if (closed.count(next) == 0) continue;
+            if (closed.contains(next)) continue;
             if (grid(next)) continue;
 
             const auto g_next = g[current] + 1;
-            if (g.count(next) > 0 && g_next >= g[next]) continue;
+            if (g.contains(next) && g_next >= g[next]) continue;
 
             parents[next] = current;
             if (next == end) return reconstruct_path(parents, next);
@@ -63,7 +65,7 @@ inline std::vector<Point> Navigator::reconstruct_path(
     const std::unordered_map<Point, Point, Point::Hash>& parents, Point end) {
     std::vector<Point> path {end};
     auto current = end;
-    while (parents.count(current) > 0) {
+    while (parents.contains(current)) {
         current = parents.at(current);
         path.push_back(current);
     }

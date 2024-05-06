@@ -1,14 +1,24 @@
 import sys
 sys.path.append("bin/")
+
 from libpath import *
 from enum import Enum
+from collections import deque
+
 
 class Agent:
-    class State(Enum):
-        IDLE = 1
+    def __init__(self, position):
+        self.position = position
+        self.path = None
 
-    def __init__(self):
-        self.state = Agent.State.IDLE
+    def set_path(self, path):
+        self.path = deque(path)
+
+    def update(self):
+        if self.path:
+            next = self.path.popleft()
+            self.position = next
+
 
 def load_grid(grid_path):
     rows, cols = 0, 0
@@ -31,6 +41,7 @@ def run(grid):
 
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
+    GRAY = (150, 150, 150)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
@@ -42,7 +53,9 @@ def run(grid):
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
 
-    agent = Agent()
+    agent = Agent(start)
+    agent.set_path(Navigator.navigate_astar(grid, start, end))
+    print("new path:", agent.path)
 
     running = True
     while running:
@@ -52,21 +65,33 @@ def run(grid):
 
         # Draw the grid
         screen.fill(WHITE)
+
         for row in range(grid.rows):
             for col in range(grid.cols):
-                color = WHITE if grid.at(Point(row, col)) == 0 else BLACK
+                color = WHITE
+                if grid.at(Point(row, col)) == 1:
+                    color = BLACK
+                elif Point(row, col) in agent.path:
+                    color = BLUE
+                # color = WHITE if grid.at(Point(row, col)) == 0 else BLACK
                 pygame.draw.rect(screen, color, (col * 40, row * 40, 40, 40))
-
-        pygame.draw.rect(screen, GREEN, (start.c * 40, start.r * 40, 40, 40))
         pygame.draw.rect(screen, RED, (end.c * 40, end.r * 40, 40, 40))
+        pygame.draw.rect(screen, GREEN, (agent.position.c * 40, agent.position.r * 40, 40, 40))
 
-        # Update the agent
+        for row in range(grid.rows + 1):
+            pygame.draw.line(screen, GRAY, (0, row * 40), (grid.cols * 40, row * 40))
+        for col in range(grid.cols + 1):
+            pygame.draw.line(screen, GRAY, (col * 40, 0), (col * 40, grid.rows * 40))
+
+
+
+        agent.update()
 
         pygame.display.flip()
         pygame.time.delay(100)
 
-
     pygame.quit()
+
 
 if __name__ == "__main__":
     import argparse
