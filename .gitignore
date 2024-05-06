@@ -1,6 +1,7 @@
-# cpp
+# build
 cmake-build-*
 build
+bin
 
 # python
 __pycache__

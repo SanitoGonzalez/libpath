@@ -22,8 +22,13 @@ struct Grid {
     std::vector<int> data;
     const size_t rows, cols;
 
+    Grid(const std::vector<int>& data, const size_t rows, const size_t cols)
+        : data(data), rows(rows), cols(cols) {}
+
     int& operator()(const Point p) { return data[p.r * cols + p.c]; }
     const int& operator()(const Point p) const { return data[p.r * cols + p.c]; }
+
+    [[nodiscard]] int at(const Point p) const { return data[p.r * cols + p.c]; }
 
     [[nodiscard]] std::vector<Point> get_neighbors(const Point p) const {
         std::vector<Point> neighbors {};
