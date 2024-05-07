@@ -5,7 +5,7 @@ project(path_finding
 
 add_library(path SHARED
     src/path/grid.hpp
-    src/path/navigator.hpp
+    src/path/pathfinder.hpp
     src/path/pypath.cpp
 )
 
@@ -42,10 +42,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests
-    src/path/navigator.test.cpp
+    src/path/pathfinder.test.cpp
 )
 target_compile_features(tests PRIVATE cxx_std_20)
 target_include_directories(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+
+enable_testing()
+add_test(NAME libpath-tests COMMAND test)

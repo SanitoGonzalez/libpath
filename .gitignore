@@ -5,6 +5,7 @@ bin
 
 # python
 __pycache__
+venv
 
 # IDE
 .idea

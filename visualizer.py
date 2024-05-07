@@ -12,6 +12,7 @@ class Agent:
         self.path = None
 
     def set_path(self, path):
+        print("new path:", path)
         self.path = deque(path)
 
     def update(self):
@@ -54,8 +55,7 @@ def run(grid):
     screen = pygame.display.set_mode((800, 600))
 
     agent = Agent(start)
-    agent.set_path(Navigator.navigate_astar(grid, start, end))
-    print("new path:", agent.path)
+    agent.set_path(Pathfinder.astar(grid, start, end))
 
     running = True
     while running:
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--grid", default="data/maps/map10_10.txt")
+    parser.add_argument("--grid", default="data/maps/map5_5.txt")
     args = parser.parse_args()
 
     grid = load_grid(args.grid)

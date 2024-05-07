@@ -1,4 +1,4 @@
-#include <path/navigator.hpp>
+#include <path/pathfinder.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -19,8 +19,8 @@ PYBIND11_MODULE(libpath, m) {
         .def_readonly("rows", &Grid::rows)
         .def_readonly("cols", &Grid::cols)
         .def("at", &Grid::at);
-    // .def("get_neighbors", &path::Grid::get_neighbors);
 
-    py::class_<Navigator>(m, "Navigator")
-        .def_static("navigate_astar", &Navigator::navigate_astar);
+    py::class_<Pathfinder>(m, "Pathfinder")
+        .def_static("astar", &Pathfinder::astar)
+        .def_static("jps", &Pathfinder::jps);
 }
