@@ -2,6 +2,7 @@
 
 #include <path/grid.hpp>
 
+#include <iostream>
 #include <algorithm>
 #include <functional>
 #include <queue>
@@ -13,6 +14,7 @@ class Pathfinder {
 public:
     static std::vector<Point> astar(const Grid& grid, Point start, Point end);
     static std::vector<Point> jps(const Grid& grid, Point start, Point end);
+    static std::vector<Point> jps_b(const BitGrid& grid, Point start, Point end);
 
 private:
     static std::vector<Point> reconstruct_path(const std::unordered_map<Point, Point, Point::Hash>& parents, Point end);
@@ -69,85 +71,106 @@ inline std::vector<Point> Pathfinder::jps(const Grid& grid, const Point start, c
     std::unordered_set<Point, Point::Hash> closed {};
     std::unordered_map<Point, Point, Point::Hash> parents {};
 
-    const auto probe = [&](Point p, const Point direction, auto&& probe_r)->void {
+    const auto has_forced_neighbor = [&](const Point p, const Point direction)->bool {
+        if (!grid.is_inside(p) || !grid.is_blocked(p)) return false;
+
+        const auto [dr, dc] = direction;
+        if (dc * dc > 0) {
+            // Horizontal
+            const Point forced_neighbor {p.r, p.c + dc};
+            if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) return true;
+        } else if (dr * dr > 0) {
+            // Vertical
+            const Point forced_neighbor {p.r + dr, p.c};
+            if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) return true;
+        }
+        return false;
+    };
+
+    const auto probe = [&](Point p, const Point direction, auto&& probe_r)->bool {
         const auto [dr, dc] = direction;
 
         while (grid.is_inside(p)) {
-            if (grid.is_blocked(p)) return;
-            // if (closed.contains(p)) return;
-            // closed.insert(p);
+            if (grid.is_blocked(p)) return false;
+
+            // std::cout << std::format("{}, {}", p.to_string(), direction.to_string()) << std::endl;
 
             parents[p] = {p.r - dr, p.c - dc};
             if (p == end) {
-                open.push({0, end});
-                return;
+                // open.push({0, end});
+                return true;
             }
 
-            // Check forced neighbors
-            if (dr * dc > 0) {
+            if (dr * dc != 0) {
                 // Diagonal probe
-                probe_r(p, {dr, 0}, probe_r);
-                probe_r(p, {0, dc}, probe_r);
-            } else if (dc > 0) {
+                const Point front {p.r - dr, p.c};
+                const Point back {p.r, p.c - dc};
+
+                if (has_forced_neighbor(front, {dr, 0}) || has_forced_neighbor(back, {0, dc})) {
+                    open.push({heuristic(p, end), p});
+                    return true;
+                }
+
+                bool found_forced_neighbor = false;
+                found_forced_neighbor |= probe_r({p.r + dr, p.c}, {dr, 0}, probe_r);
+                found_forced_neighbor |= probe_r({p.r, p.c + dc}, {0, dc}, probe_r);
+
+                if (found_forced_neighbor) {
+                    open.push({heuristic(p, end), p});
+                    return true;
+                }
+            }
+            else if (dc * dc > 0) {
                 // Horizontal probe
                 const Point up {p.r + 1, p.c};
                 const Point down {p.r - 1, p.c};
 
-                if (grid.is_inside(up) && grid.is_blocked(up)) {
-                    const Point forced_neighbor {up.r, up.c + dc};
-                    if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) {
-                        open.push({heuristic(p, end), p});
-                        return;
-                    }
+                if (has_forced_neighbor(up, direction) || has_forced_neighbor(down, direction)) {
+                    open.push({heuristic(p, end), p});
+                    return true;
                 }
-                if (grid.is_inside(down) && grid.is_blocked(down)) {
-                    const Point forced_neighbor {down.r, down.c + dc};
-                    if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) {
-                        open.push({heuristic(p, end), p});
-                        return;
-                    }
-                }
-            } else if (dr > 0) {
+            } else if (dr * dr > 0) {
                 // Vertical probe
                 const Point right {p.r, p.c + 1};
                 const Point left {p.r, p.c - 1};
 
-                if (grid.is_inside(right) && grid.is_blocked(right)) {
-                    const Point forced_neighbor {right.r + dr, right.c};
-                    if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) {
-                        open.push({heuristic(p, end), p});
-                        return;
-                    }
-                }
-                if (grid.is_inside(left) && grid.is_blocked(left)) {
-                    const Point forced_neighbor {left.r + dr, left.c};
-                    if (grid.is_inside(forced_neighbor) && !grid.is_blocked(forced_neighbor)) {
-                        open.push({heuristic(p, end), p});
-                        return;
-                    }
+                if (has_forced_neighbor(right, direction) || has_forced_neighbor(left, direction)) {
+                    open.push({heuristic(p, end), p});
+                    return true;
                 }
             }
 
+            closed.insert(p);
             p.r += dr;
             p.c += dc;
         }
+        return false;
     };
 
     const auto jump = [&grid, &closed, &probe](const Point p) {
-        for (const auto [rt, ct] : grid.get_neighbors(p))
-            probe(p, {rt - p.r, ct - p.c}, probe);
-        // closed.insert(p);
+        closed.insert(p);
+        for (const auto neighbor : grid.get_neighbors(p)) {
+            if (closed.contains(neighbor) || grid.is_blocked(neighbor)) continue;
+            /*std::cout << std::format(
+                "{} -> {}, {}", p.to_string(), neighbor.to_string(),
+                Point(neighbor.r - p.r, neighbor.c - p.c).to_string()) << std::endl;*/
+            probe(neighbor, {neighbor.r - p.r, neighbor.c - p.c}, probe);
+        }
     };
 
     open.push({0, start});
     while (!open.empty()) {
         const auto [_f, current] = open.top();
         open.pop();
-
-        if (current == end) return reconstruct_path(parents, end);
         jump(current);
+
+        if (parents.contains(end)) break;
     }
 
+    return reconstruct_path(parents, end);
+}
+
+inline std::vector<Point> Pathfinder::jps_b(const BitGrid& grid, Point start, Point end) {
     return {};
 }
 

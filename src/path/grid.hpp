@@ -58,5 +58,10 @@ struct Grid {
 struct BitGrid {
     std::vector<uint64_t> data;
     const int rows, cols;
+
+    BitGrid(const std::vector<int>& src, const int rows, const int cols)
+        : data(std::vector<uint64_t> {static_cast<std::size_t>((rows * cols) / 64 + 1) , 0}), rows(rows), cols(cols) {
+        auto a = (rows * cols) / 64 + 1;
+    }
 };
 }

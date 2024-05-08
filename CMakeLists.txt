@@ -50,5 +50,11 @@ target_include_directories(tests PRIVATE
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
+add_custom_command(
+    TARGET tests
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/data
+)
+
 enable_testing()
 add_test(NAME libpath-tests COMMAND test)

@@ -4,7 +4,11 @@ A*, JPS and algorithms implemented in C++ and bound to Python.
 
 ## Library Usage
 ### Compile
-
+```shell
+mkdir build && cd build
+cmake ..
+cmake --build . --target path
+```
 ### Import
 
 The compiled shared library can be imported in Python as below.

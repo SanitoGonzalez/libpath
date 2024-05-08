@@ -55,7 +55,7 @@ def run(grid):
     screen = pygame.display.set_mode((800, 600))
 
     agent = Agent(start)
-    agent.set_path(Pathfinder.astar(grid, start, end))
+    agent.set_path(Pathfinder.jps(grid, start, end))
 
     running = True
     while running:
