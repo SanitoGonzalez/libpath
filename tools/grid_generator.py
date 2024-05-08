@@ -39,14 +39,20 @@ if __name__ == "__main__":
     parser.add_argument("--cols", required=True, type=int)
     parser.add_argument("--density", type=float, default=0.3)
     parser.add_argument("--out", type=str, default="map.txt")
+    parser.add_argument("--open", type=bool, default=False)
     args = parser.parse_args()
 
     density_min, density_max = 0.1, 0.7
     if not density_min <= args.density <= density_max:
         raise argparse.ArgumentTypeError(f"density {args.density} is not in range [{density_min}, {density_max}]")
 
+    if args.open:
+        grid = [[0] * args.cols for r in range(args.rows)]
+    else:
+        grid = generate_grid(args.rows, args.cols, args.density)
+
     with open(args.out, "w") as f:
         f.write(f"{args.rows} {args.cols}\n")
-        for row in generate_grid(args.rows, args.cols, args.density):
+        for row in grid:
             f.write(" ".join(map(str, row)))
             f.write("\n")

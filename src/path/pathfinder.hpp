@@ -2,9 +2,9 @@
 
 #include <path/grid.hpp>
 
-#include <iostream>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -164,10 +164,10 @@ inline std::vector<Point> Pathfinder::jps(const Grid& grid, const Point start, c
         open.pop();
         jump(current);
 
-        if (parents.contains(end)) break;
+        if (parents.contains(end)) return reconstruct_path(parents, end);
     }
 
-    return reconstruct_path(parents, end);
+    return {};
 }
 
 inline std::vector<Point> Pathfinder::jps_b(const BitGrid& grid, Point start, Point end) {

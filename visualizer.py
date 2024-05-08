@@ -46,16 +46,18 @@ def run(grid):
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
     BLUE = (0, 0, 255)
-    # CELL_SIZE =
+
+    SCREEN_WIDTH, SCREEN_HEIGHT = 1600, 1600
+    CELL_SIZE = min(SCREEN_HEIGHT // grid.cols, SCREEN_WIDTH // grid.rows)
 
     start = Point(0, 0)
     end = Point(grid.rows - 1, grid.cols - 1)
 
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     agent = Agent(start)
-    agent.set_path(Pathfinder.jps(grid, start, end))
+    agent.set_path(Pathfinder.astar(grid, start, end))
 
     running = True
     while running:
@@ -74,14 +76,14 @@ def run(grid):
                 elif Point(row, col) in agent.path:
                     color = BLUE
                 # color = WHITE if grid.at(Point(row, col)) == 0 else BLACK
-                pygame.draw.rect(screen, color, (col * 40, row * 40, 40, 40))
-        pygame.draw.rect(screen, RED, (end.c * 40, end.r * 40, 40, 40))
-        pygame.draw.rect(screen, GREEN, (agent.position.c * 40, agent.position.r * 40, 40, 40))
+                pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        pygame.draw.rect(screen, RED, (end.c * CELL_SIZE, end.r * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        pygame.draw.rect(screen, GREEN, (agent.position.c * CELL_SIZE, agent.position.r * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
         for row in range(grid.rows + 1):
-            pygame.draw.line(screen, GRAY, (0, row * 40), (grid.cols * 40, row * 40))
+            pygame.draw.line(screen, GRAY, (0, row * CELL_SIZE), (grid.cols * CELL_SIZE, row * CELL_SIZE))
         for col in range(grid.cols + 1):
-            pygame.draw.line(screen, GRAY, (col * 40, 0), (col * 40, grid.rows * 40))
+            pygame.draw.line(screen, GRAY, (col * CELL_SIZE, 0), (col * CELL_SIZE, grid.rows * CELL_SIZE))
 
 
 

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.27)
-project(path_finding
+project(libpath
     VERSION 0.1
     LANGUAGES CXX)
 
-add_library(path SHARED
+add_library(libpath-src SHARED
     src/path/grid.hpp
     src/path/pathfinder.hpp
     src/path/pypath.cpp
@@ -19,15 +19,17 @@ FetchContent_MakeAvailable(pybind11)
 
 find_package(Python REQUIRED COMPONENTS Development)
 
-target_compile_features(path PRIVATE cxx_std_20)
-target_include_directories(path PRIVATE
+target_compile_features(libpath-src PRIVATE cxx_std_20)
+target_include_directories(libpath-src PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${Python_INCLUDE_DIRS}
 )
 message(${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(path PRIVATE pybind11::headers)
-set_target_properties(path PROPERTIES
+target_link_libraries(libpath-src PRIVATE pybind11::headers)
+set_target_properties(libpath-src PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin
+    PREFIX ""
+    OUTPUT_NAME "libpath"
 )
 
 pybind11_add_module(libpath src/path/pypath.cpp)
@@ -41,20 +43,36 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests
+add_executable(libpath-tests
     src/path/pathfinder.test.cpp
 )
-target_compile_features(tests PRIVATE cxx_std_20)
-target_include_directories(tests PRIVATE
+target_compile_features(libpath-tests PRIVATE cxx_std_20)
+target_include_directories(libpath-tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools
 )
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(libpath-tests PRIVATE Catch2::Catch2WithMain)
 
 add_custom_command(
-    TARGET tests
+    TARGET libpath-tests
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/data
 )
 
-enable_testing()
-add_test(NAME libpath-tests COMMAND test)
+
+### benchmark ###
+add_executable(libpath-benchmark
+    src/path/pathfinder.bench.cpp
+)
+target_compile_features(libpath-benchmark PRIVATE cxx_std_20)
+target_include_directories(libpath-benchmark PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tools
+)
+target_link_libraries(libpath-benchmark PRIVATE Catch2::Catch2WithMain)
+
+add_custom_command(
+    TARGET libpath-benchmark
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/data
+)
